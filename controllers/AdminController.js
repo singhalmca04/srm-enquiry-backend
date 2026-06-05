@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const Student = mongoose.model('Student');
+const Course = mongoose.model('Course');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
@@ -149,15 +150,16 @@ const sendEnquiry = async (req, res) => {
                 pass: 'sdwp yrce hiya yojm'
             }
         });
+        let courseData = await Course.findOne({ code: course });
         await transporter.sendMail({
             from: "Admission Enquiry From SRM singhalmca04@gail.com",
             to: "vinayk@yopmail.com",
             subject: "New Website Enquiry",
-            html: `<h3>New Enquiry</h3>
+            html: `<h3 style='color: #333; text-align: center; font-size: 24px; background-color: #f0f0f0; padding: 10px;'>New Enquiry</h3>
                 <p><b>Name:</b> ${name}</p>
                 <p><b>Email:</b> ${email}</p>
                 <p><b>Mobile:</b> ${mobile}</p>
-                <p><b>Course:</b> ${course}</p>
+                <p><b>Course:</b> ${courseData ? courseData.courseName : course}</p>
                 <p><b>Message:</b> ${message}</p>`
         });
         res.status(200).json({success: true, message: "Enquiry sent successfully", enquiry});
