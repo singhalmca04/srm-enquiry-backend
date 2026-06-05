@@ -152,8 +152,9 @@ const sendEnquiry = async (req, res) => {
         });
         let courseData = await Course.findOne({ code: course });
         await transporter.sendMail({
-            from: "Admission Enquiry From SRM singhalmca04@gail.com",
+            from: "Admission Enquiry singhalmca04@gail.com",
             to: "vinayk@yopmail.com",
+            cc: "vinayk@srmist.edu.in",
             subject: "New Website Enquiry",
             html: `<h3 style='color: #333; text-align: center; font-size: 24px; background-color: #f0f0f0; padding: 10px;'>New Enquiry</h3>
                 <p><b>Name:</b> ${name}</p>
