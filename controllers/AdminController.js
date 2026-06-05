@@ -157,11 +157,12 @@ const sendEnquiry = async (req, res) => {
             cc: "vinayk@srmist.edu.in",
             subject: "New Website Enquiry",
             html: `<h3 style='color: #333; text-align: center; font-size: 24px; background-color: #f0f0f0; padding: 10px;'>New Enquiry</h3>
-                <p><b>Name:</b> ${name}</p>
-                <p><b>Email:</b> ${email}</p>
-                <p><b>Mobile:</b> ${mobile}</p>
-                <p><b>Course:</b> ${courseData ? courseData.courseName : course}</p>
-                <p><b>Message:</b> ${message}</p>`
+                <p style='font-size: 16px;'><b>Name:</b> ${name}</p>
+                <p style='font-size: 16px;'><b>Email:</b> ${email}</p>
+                <p style='font-size: 16px;'><b>Mobile:</b> ${mobile}</p>
+                <p style='font-size: 16px;'><b>Course:</b> ${courseData ? courseData.courseName : course}</p>
+                <p style='font-size: 16px;'><b>Message:</b> ${message}</p><br/>
+                <p style='font-size: 16px;'> Regards,<br/>SRM Enquiry System</p>`
         });
         res.status(200).json({success: true, message: "Enquiry sent successfully", enquiry});
     } catch (err) {
