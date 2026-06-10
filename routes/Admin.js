@@ -57,7 +57,12 @@ module.exports = (app) => {
     app.post('/send-enquiry', (req, res) => {
         AdminController.sendEnquiry(req, res);
     });
-
+    app.get('/students', async (req, res) => {
+        AdminController.getStudents(req, res);
+    });
+    app.get('/students/download', async (req, res) => {
+        AdminController.downloadStudents(req, res);
+    });
     app.get('/', async (req, res) => {
         res.status(200).json({ message: 'Admin route is working!' });
     });

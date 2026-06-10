@@ -9,9 +9,67 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
-
+const ExcelJS = require("exceljs");
 const client = new OAuth2Client('11697718537-dqjd46buavim9ufcdipmvpfe3ksvt5lk.apps.googleusercontent.com');
 
+const downloadStudents = async (req, res) => {
+    const { fromDate, toDate } = req.query;
+    const query = fromDate && toDate ? { createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate + "T23:59:59") } } : {};
+    const students = await Student.find(query).sort({ createdAt: -1 }).lean();
+    const courses = await Course.find().lean();
+    const courseMap = {};
+    courses.forEach(course => {
+        courseMap[course.code] = course.courseName;
+    });
+
+    students.forEach(student => {
+        student.courseName = courseMap[student.course];
+    });
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Students");
+
+    sheet.columns = [
+        { header: "Name", key: "name" },
+        { header: "Mobile", key: "mobile" },
+        { header: "Email", key: "email" },
+        { header: "Course", key: "courseName" },
+        { header: "Message", key: "message" },
+        { header: "Date", key: "createdAt" }
+    ];
+
+    students.forEach(student => sheet.addRow(student));
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", "attachment; filename=students.xlsx");
+    await workbook.xlsx.write(res);
+    res.end();
+};
+const getStudents = async (req, res) => {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const { fromDate, toDate } = req.query;
+        let query = {};
+        if (fromDate && toDate) {
+            query.createdAt = {
+                $gte: new Date(fromDate),
+                $lte: new Date(toDate + "T23:59:59")
+            };
+        }
+        const students = await Student.aggregate([
+            { $match: query },
+            { $lookup: { from: "courses", localField: "course", foreignField: "code", as: "courseInfo" } },
+            { $unwind: "$courseInfo" },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+        const total = await Student.countDocuments(query);
+        res.json({ success: true, students, total, page, totalPages: Math.ceil(total / limit) });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+};
 const uploadPics = async (req, res) => {
     try {
         res.json({ message: 'Image uploaded successfully!' });
@@ -140,7 +198,7 @@ const sendEnquiry = async (req, res) => {
     try {
         const { name, email, mobile, course, message } = req.body;
         let enquiry = await Student.create({ name, email, mobile, course, message });
-        if(!enquiry) {
+        if (!enquiry) {
             return res.status(500).json({ success: false, message: "Failed to save enquiry" });
         }
         const transporter = nodemailer.createTransport({
@@ -164,7 +222,7 @@ const sendEnquiry = async (req, res) => {
                 <p style='font-size: 16px;'><b>Message:</b> ${message}</p><br/>
                 <p style='font-size: 16px;'> Regards,<br/>SRM Enquiry System</p>`
         });
-        res.status(200).json({success: true, message: "Enquiry sent successfully", enquiry});
+        res.status(200).json({ success: true, message: "Enquiry sent successfully", enquiry });
     } catch (err) {
         console.log(err);
         res.status(500).json({ success: false, message: "Failed to send enquiry" });
@@ -173,6 +231,8 @@ const sendEnquiry = async (req, res) => {
 
 
 module.exports = {
+    downloadStudents,
+    getStudents,
     uploadPics,
     loginUser,
     signupUser,
