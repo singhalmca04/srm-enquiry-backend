@@ -6,6 +6,7 @@ const StudentSchema = new Schema({
     email: {type:String, default: "" },
     mobile: {type:String, default: "" },
     course: {type:String, default: "" },
+    refcode: {type:String, default: "" },
     message: {type:String, default: "" }
 },{
         timestamps: true

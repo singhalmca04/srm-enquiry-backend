@@ -33,6 +33,7 @@ const downloadStudents = async (req, res) => {
         { header: "Mobile", key: "mobile" },
         { header: "Email", key: "email" },
         { header: "Course", key: "courseName" },
+        { header: "Referral Code", key: "refcode" },
         { header: "Message", key: "message" },
         { header: "Date", key: "createdAt" }
     ];
@@ -196,8 +197,8 @@ const googleLogin = async (req, res) => {
 };
 const sendEnquiry = async (req, res) => {
     try {
-        const { name, email, mobile, course, message } = req.body;
-        let enquiry = await Student.create({ name, email, mobile, course, message });
+        const { name, email, mobile, course, refcode, message } = req.body;
+        let enquiry = await Student.create({ name, email, mobile, course, refcode, message });
         if (!enquiry) {
             return res.status(500).json({ success: false, message: "Failed to save enquiry" });
         }
@@ -211,8 +212,8 @@ const sendEnquiry = async (req, res) => {
         let courseData = await Course.findOne({ code: course });
         await transporter.sendMail({
             from: "Admission Enquiry singhalmca04@gail.com",
-            to: "director@srmup.in",
-            // cc: "vinayk@yopmail.com",
+            // to: "director@srmup.in",
+            to: "vinayk@yopmail.com",
             subject: "New Website Enquiry",
             html: `<h3 style='color: #333; text-align: center; font-size: 24px; background-color: #f0f0f0; padding: 10px;'>New Enquiry</h3>
                 <p style='font-size: 16px;'><b>Name:</b> ${name}</p>
